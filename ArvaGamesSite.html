@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arva Games 🎨</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #8a2be2;
+            --secondary-color: #9932cc;
+            --background-light: #f5f5f5;
+            --background-dark: #1a1a1a;
+            --text-light: #333;
+            --text-dark: #f5f5f5;
+            --card-bg-light: white;
+            --card-bg-dark: #2a2a2a;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-light);
+            color: var(--text-light);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-theme {
+            background-color: var(--background-dark);
+            color: var(--text-dark);
+        }
+
+        body.dark-theme .modal-content {
+    background-color: var(--card-bg-dark);
+    color: var(--text-dark);
+}
+
+body.dark-theme .review {
+    background: rgba(138, 43, 226, 0.2);
+    color: var(--text-dark);
+}
+
+body.dark-theme .review-date {
+    color: #bbb;
+}
+
+body.dark-theme .delete-review {
+    color: #ff6b6b;
+}
+
+body.dark-theme .close-modal {
+    color: var(--primary-color);
+}
+
+body.dark-theme .pagination button {
+    background: var(--primary-color);
+    color: white;
+}
+
+body.dark-theme .pagination button:hover {
+    background: var(--secondary-color);
+}
+
+body.dark-theme #feedback-form input,
+body.dark-theme #feedback-form textarea {
+    background-color: var(--card-bg-dark);
+    color: var(--text-dark);
+    border-color: #555;
+}
+
+body.dark-theme #feedback-form input:focus,
+body.dark-theme #feedback-form textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 8px rgba(138, 43, 226, 0.3);
+}
+
+
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+            padding: 30px 0;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 0;
+            margin: 20px 0 0;
+        }
+
+        nav li {
+            margin: 0 15px;
+        }
+
+        nav a {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+nav a:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(138, 43, 226, 0.5);
+    animation: glow 1s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 4px 15px rgba(138, 43, 226, 0.5);
+    }
+    to {
+        box-shadow: 0 4px 20px rgba(138, 43, 226, 0.8);
+    }
+}
+
+/* Анимации для других кнопок */
+#feedback-form button,
+.theme-toggle,
+#show-all-reviews {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+#feedback-form button:hover,
+.theme-toggle:hover,
+#show-all-reviews:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(138, 43, 226, 0.5);
+    animation: glow 1s infinite alternate;
+}
+
+/* Анимация для кнопки удаления отзыва */
+.delete-review {
+    transition: all 0.3s ease;
+}
+
+.delete-review:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 99, 71, 0.5);
+}
+
+/* Анимация для модального окна */
+.modal-content {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+        main {
+            background-color: var(--card-bg-light);
+            margin: 30px 0;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-theme main {
+            background-color: var(--card-bg-dark);
+        }
+
+        .tab-content {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-out;
+            pointer-events: none;
+        }
+
+        .tab-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #e6e6fa;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* Стили для системы отзывов */
+        #feedback-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        #feedback-form input,
+        #feedback-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        #feedback-form input:focus,
+        #feedback-form textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 8px rgba(138, 43, 226, 0.3);
+        }
+
+        #feedback-form button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #feedback-form button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(138, 43, 226, 0.3);
+        }
+
+        .review {
+            background: rgba(138, 43, 226, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            animation: fadeIn 0.5s ease-out;
+            position: relative;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .review-author {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .review-date {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .delete-review {
+            background: none;
+            border: none;
+            color: #ff4d4d;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: transform 0.2s;
+        }
+
+        .delete-review:hover {
+            transform: scale(1.1);
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 0;
+            margin: 20px 0 0;
+        }
+
+        nav li {
+            margin: 0 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        nav a:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.5);
+            animation: glow 1s infinite alternate;
+        }
+
+        #show-all-reviews {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        #show-all-reviews:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(138, 43, 226, 0.3);
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--primary-color);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover {
+            background: var(--secondary-color);
+        }
+
+        .pagination button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Arva Games ✨</h1>
+            <nav>
+                <ul>
+                    <li><a href="#" data-tab="welcome"><i class='bx bx-home-alt icon'></i>Главная</a></li>
+                    <li><a href="#" data-tab="about"><i class='bx bx-user icon'></i>О нас</a></li>
+                    <li><a href="#" data-tab="services"><i class='bx bx-cog icon'></i>Связь</a></li>
+                    <li><a href="#" data-tab="feedback"><i class='bx bx-chat icon'></i>Отзывы</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div id="welcome" class="tab-content visible">
+                <h2>Добро пожаловать!</h2>
+                <p>Этот сайт был создан чтобы рассказать чуть больше о нащей студии и иметь обратную связь с нашими поклонниками!</p>
+
+                <h1>От студии... 🚀✨</h1>
+
+                <p>Хочу поблагодарить всех кто подписан на наш Yotube канал, смотрел наши ролики, коментировал, заходил в Discord и поднимал мотивацию. Вы ЛУЧШИЕ! 💝🎨 Спасибо за посещение сайта 😊🚀</p>
+            </div>
+
+            <div id="about" class="tab-content">
+                <h2>О нас</h2>
+                <p>Мы простенькая инди-студия разработчиков на Unity C#. Мы не стремимся к деньгам и популярности, мы хотим радовать вас нашими проектами и видео! 🚀🔥 В данный момент у нас нету выпущенных серьёзных проектов, но это не надолго! Далее в отделе "Связь" </p>
+
+                <h1> Хотите посмотреть наши видеоуроки? 🤔 </h1>
+                <p>У нас есть YouTube канал, нам будет приятно видеть вас там! 🥳💝✨ Там есть материал который поможет хоть немного приблизиться к искусству пиксель-арта! Все мы начинали, так что не бойся! 🔥</p>
+
+                <link>https://www.youtube.com/channel/UCZ-iqQdqk3NxggXyrFrJhdw - наш Youtube канал! 🎦<link>
+
+            
+            </div>
+
+            <div id="services" class="tab-content">
+                <h2>Свящь с нами! ✨</h2>
+                <ul>
+                    <li>Whatsapp: +7 747 193 1911</li>
+                    <li>Discord: makskomkoff_76866</li>
+                    <li>Telegramm: @MaksKomkOFF</li>
+                    <h1>Ждём ваших слов! 🔥✨</h1>
+
+                    <p>Вы можете связаться чтобы получить помощь в рисовании pixel art, кода c# или Unity. Вы можете что-нибудь пожелать. Нам всегда будет приятно! 💝😍 ‼ Спам будет игнорирован и отправлен в бан ‼</p>
+                </ul>
+            </div>
+
+            <div id="feedback" class="tab-content">
+                <h2>Оставьте отзыв</h2>
+                <form id="feedback-form">
+                    <label for="name">Ваше имя:</label>
+                    <input type="text" id="name" required>
+                    
+                    <label for="message">Ваш отзыв:</label>
+                    <textarea id="message" rows="5" required></textarea>
+                    
+                    <button type="submit">Отправить</button>
+                </form>
+                
+                <button id="show-all-reviews">Показать все отзывы</button>
+                
+                <div id="reviews-list"></div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Arva Games 🎨 | От всей души команды ❤️</p>
+        </footer>
+
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <i class='bx bx-moon'></i>
+        </button>
+    </div>
+
+    <!-- Модальное окно для всех отзывов -->
+    <div id="all-reviews-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Все отзывы</h2>
+                <button class="close-modal"><i class='bx bx-x'></i></button>
+            </div>
+            <div id="all-reviews-list"></div>
+            <div class="pagination">
+                <button id="prev-page">Предыдущие</button>
+                <button id="next-page">Следующие</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Переключение темы
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+        }
+
+        // Загрузка темы
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+
+        // Переключение вкладок
+        const tabs = document.querySelectorAll('[data-tab]');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetTab = this.getAttribute('data-tab');
+                
+                tabContents.forEach(content => {
+                    content.classList.remove('visible');
+                });
+                
+                document.getElementById(targetTab).classList.add('visible');
+                
+                tabs.forEach(tab => tab.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        const feedbackForm = document.getElementById('feedback-form');
+        const reviewsList = document.getElementById('reviews-list');
+        const showAllReviewsButton = document.getElementById('show-all-reviews');
+        const allReviewsModal = document.getElementById('all-reviews-modal');
+        const allReviewsList = document.getElementById('all-reviews-list');
+        const closeModalButton = document.querySelector('.close-modal');
+        const prevPageButton = document.getElementById('prev-page');
+        const nextPageButton = document.getElementById('next-page');
+        
+        let reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+        let currentPage = 1;
+        const reviewsPerPage = 5;
+        
+        function displayReviews(container, reviewsToShow) {
+            container.innerHTML = '';
+            
+            if (reviewsToShow.length === 0) {
+                container.innerHTML = '<p>Пока нет отзывов. Станьте первым!</p>';
+                return;
+            }
+            
+            reviewsToShow.forEach((review, index) => {
+                const reviewElement = document.createElement('div');
+                reviewElement.className = 'review';
+                reviewElement.innerHTML = `
+                    <div class="review-header">
+                        <span class="review-author">${review.name}</span>
+                        <span class="review-date">${new Date(review.date).toLocaleString()}</span>
+                        <button class="delete-review" data-index="${index}">
+                            <i class='bx bx-trash'></i>
+                        </button>
+                    </div>
+                    <p>${review.message}</p>
+                `;
+                container.appendChild(reviewElement);
+            });
+        }
+        
+        function updatePagination() {
+            prevPageButton.disabled = currentPage === 1;
+            nextPageButton.disabled = currentPage * reviewsPerPage >= reviews.length;
+        }
+        
+        function showAllReviews() {
+            const startIndex = (currentPage - 1) * reviewsPerPage;
+            const endIndex = startIndex + reviewsPerPage;
+            const paginatedReviews = reviews.slice(startIndex, endIndex);
+            
+            displayReviews(allReviewsList, paginatedReviews);
+            updatePagination();
+            allReviewsModal.style.display = 'flex';
+        }
+        
+        feedbackForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const message = document.getElementById('message').value.trim();
+            
+            if (name && message) {
+                reviews.push({
+                    name,
+                    message,
+                    date: new Date().toISOString()
+                });
+                
+                localStorage.setItem('reviews', JSON.stringify(reviews));
+                displayReviews(reviewsList, reviews.slice(0, 3)); // Показываем 3 последних отзыва
+                feedbackForm.reset();
+                alert('Спасибо за ваш отзыв!');
+            } else {
+                alert('Пожалуйста, заполните все поля!');
+            }
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-review')) {
+                const index = e.target.closest('.delete-review').getAttribute('data-index');
+                if (confirm('Удалить этот отзыв?')) {
+                    reviews.splice(index, 1);
+                    localStorage.setItem('reviews', JSON.stringify(reviews));
+                    displayReviews(reviewsList, reviews.slice(0, 3));
+                    showAllReviews();
+                }
+            }
+        });
+        
+        showAllReviewsButton.addEventListener('click', showAllReviews);
+        closeModalButton.addEventListener('click', () => {
+            allReviewsModal.style.display = 'none';
+        });
+        
+        prevPageButton.addEventListener('click', () => {
+            currentPage--;
+            showAllReviews();
+        });
+        
+        nextPageButton.addEventListener('click', () => {
+            currentPage++;
+            showAllReviews();
+        });
+        
+        // Показываем 3 последних отзыва при загрузке
+        displayReviews(reviewsList, reviews.slice(0, 3));
+    </script>
+</body>
+</html>
